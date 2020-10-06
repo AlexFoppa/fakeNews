@@ -18,13 +18,13 @@ cv = CountVectorizer(max_features = 1500)
 X = cv.fit_transform(dataset.iloc[:,0]).toarray()
 y = dataset.iloc[:,-1]
 
-#naive bayes
+
 # Splitting the dataset into the Training set and Test set
 from sklearn.model_selection import train_test_split
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.20, random_state = 0)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.20)
 
 from sklearn.ensemble import RandomForestClassifier
-classifier = RandomForestClassifier(n_estimators = 1000, criterion = 'gini', max_depth = 10)
+classifier = RandomForestClassifier(n_estimators = 1000, criterion = 'entropy', max_depth = 75)
 classifier.fit(X_train, y_train)
 
 # Predicting the Test set results
@@ -38,6 +38,6 @@ cm = confusion_matrix(y_test, y_pred)
 filename = 'model04_randomForest.sav'
 pickle.dump(classifier, open(filename, 'wb'))
 
-loaded_model = pickle.load(open('model08_randomForest_mf1500_t1000.sav', 'rb'))
+loaded_model = pickle.load(open(filename, 'rb'))
 result = loaded_model.score(X_test, y_test)
 print(result)
