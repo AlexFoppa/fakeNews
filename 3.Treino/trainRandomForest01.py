@@ -8,9 +8,10 @@ import pickle
 originalDataset = pd.read_csv('news_articles.csv')
 textData = originalDataset.iloc[:,10]
 fakeOrReal = originalDataset.iloc[:,8]
+fakeOrReal = fakeOrReal.replace(['Real'],1)
+fakeOrReal = fakeOrReal.replace(['Fake'],0)
 dataset = pd.concat([textData, fakeOrReal], axis=1, sort=False)
-dataset.drop(dataset.tail(50).index,inplace=True)
-
+dataset = dataset.dropna(thresh=2)
     
 #creating bag of words
 from sklearn.feature_extraction.text import CountVectorizer
@@ -24,7 +25,7 @@ from sklearn.model_selection import train_test_split
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.20)
 
 from sklearn.ensemble import RandomForestClassifier
-classifier = RandomForestClassifier(n_estimators = 1000, criterion = 'entropy', max_depth = 75)
+classifier = RandomForestClassifier(n_estimators = 100, criterion = 'entropy', max_depth = 75)
 classifier.fit(X_train, y_train)
 
 # Predicting the Test set results
@@ -35,9 +36,19 @@ from sklearn.metrics import confusion_matrix
 cm = confusion_matrix(y_test, y_pred)
 
 #Save file
-filename = 'model04_randomForest.sav'
+filename = 'modelXX_randomForest.sav'
 pickle.dump(classifier, open(filename, 'wb'))
 
 loaded_model = pickle.load(open(filename, 'rb'))
 result = loaded_model.score(X_test, y_test)
 print(result)
+
+
+#move threshold
+threshold = 0.425
+
+predicted_proba = classifier.predict_proba(X_test)
+predicted = (predicted_proba [:,1] >= threshold).astype('int')
+
+cm = confusion_matrix(y_test, predicted)
+
